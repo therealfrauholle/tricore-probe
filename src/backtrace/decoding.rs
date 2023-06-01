@@ -8,10 +8,10 @@ use super::{
 
 /// Implementors can provide a detailed representation given the specified
 /// resource
-pub trait Detailed<I> {
+pub trait Detailed<Representation> {
     type Resource<'a>;
 
-    fn as_detailed(&self, resource: Self::Resource<'_>) -> anyhow::Result<I>;
+    fn as_detailed(&self, resource: Self::Resource<'_>) -> anyhow::Result<Representation>;
 }
 
 /// A path to an elf file
