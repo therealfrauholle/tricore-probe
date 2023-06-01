@@ -3,7 +3,7 @@
 `tricore-probe` is an effort to deploy and debug rust programs with little effort
 on Tricore chips. It uses publicly available Infineon tools to interface with the
 chips debug controller. As its name suggests, it is inspired by [`probe-run`](https://crates.io/crates/probe-run) and depends 
-on the [`defmt`](https://defmt.ferrous-systems.com/) framework to integrate seemlessly just as `probe-run` does.
+on the [`defmt`](https://defmt.ferrous-systems.com/) framework to integrate seamlessly just as `probe-run` does.
 
 This program can be configured as a [runner](https://doc.rust-lang.org/cargo/reference/config.html#targettriplerunner). 
 Check [`main.rs`](src/main.rs) for additional configuration options.
