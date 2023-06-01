@@ -6,7 +6,7 @@ use anyhow::Context;
 use clap::Parser;
 use colored::Colorize;
 
-use crate::backtrace::decoding::ParseInfo;
+use crate::backtrace::decoding::Detailed;
 use crate::chip_interface::ChipInterface;
 use crate::defmt::DefmtDecoder;
 
@@ -70,7 +70,7 @@ fn main() -> anyhow::Result<()> {
         &mut defmt_decoder,
     )?;
 
-    let backtrace_info = backtrace.addr2line(args.elf.as_path())?;
+    let backtrace_info = backtrace.as_detailed(args.elf.as_path().into())?;
 
     println!("{}", "Device halted, backtrace as follows".red());
     backtrace_info.log_stdout();

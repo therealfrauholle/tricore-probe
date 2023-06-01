@@ -2,16 +2,33 @@ use std::path::Path;
 
 use tricore_common::backtrace::{csa::SavedContext, Stacktrace};
 
-use super::{BackTraceInfo, StackFrameInfo, TrapInfo, addr2line::Addr2LineRegistry, trap_info::TrapMetadata};
+use super::{
+    addr2line::Addr2LineRegistry, trap_info::TrapMetadata, BackTraceInfo, StackFrameInfo, TrapInfo,
+};
 
-pub trait ParseInfo {
-    fn addr2line(&self, elf_file: &Path) -> anyhow::Result<BackTraceInfo>;
+/// Implementors can provide a detailed representation given the specified
+/// resource
+pub trait Detailed<I> {
+    type Resource<'a>;
+
+    fn as_detailed(&self, resource: Self::Resource<'_>) -> anyhow::Result<I>;
 }
 
-impl ParseInfo for Stacktrace {
-    fn addr2line(&self, elf_file: &Path) -> anyhow::Result<BackTraceInfo> {
-        let mut registry = Addr2LineRegistry::new(elf_file);
-        let trap_metadata = TrapMetadata::from_elf(elf_file)?;
+/// A path to an elf file
+pub struct ElfPath<'a>(pub &'a Path);
+
+impl<'a> From<&'a Path> for ElfPath<'a> {
+    fn from(value: &'a Path) -> Self {
+        ElfPath(value)
+    }
+}
+
+impl Detailed<BackTraceInfo> for Stacktrace {
+    type Resource<'a> = ElfPath<'a>;
+
+    fn as_detailed(&self, resource: Self::Resource<'_>) -> anyhow::Result<BackTraceInfo> {
+        let mut registry = Addr2LineRegistry::new(resource.0);
+        let trap_metadata = TrapMetadata::from_elf(resource.0)?;
 
         registry.load(
             self.stack_frames
