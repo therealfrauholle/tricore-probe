@@ -14,18 +14,18 @@ use backtrace::ParseInfo;
 use chip_interface::ChipInterface;
 use defmt::DefmtDecoder;
 
-/// Simple program to flash and interface with tricore chips
+/// Rapidly prototype code on tricore chips
 #[derive(Parser, Debug)]
 struct Args {
-    /// Whether flashing should be skipped
+    /// Set this flag to skip flashing; this just resets the chip and attaches the defmt decoder
     #[arg(long, default_value_t = false)]
     no_flash: bool,
 
-    /// Path to the binary
-    #[arg(value_parser = existing_path)]
+    /// Path to the elf binary
+    #[arg(value_parser = valid_path)]
     elf: PathBuf,
 
-    /// Configuration for the backend
+    /// Backend specific configuration
     #[command(flatten)]
     backend: chip_interface::Config,
 
@@ -39,7 +39,7 @@ struct Args {
     verbose: bool,
 }
 
-fn existing_path(input_path: &str) -> Result<PathBuf, anyhow::Error> {
+fn valid_path(input_path: &str) -> Result<PathBuf, anyhow::Error> {
     let path = PathBuf::from_str(input_path).with_context(|| "Value is not a correct path")?;
 
     Ok(path)

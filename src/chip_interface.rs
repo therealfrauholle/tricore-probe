@@ -7,24 +7,27 @@ use tricore_common::{backtrace::Stacktrace, Chip};
 
 cfg_if::cfg_if! {
     if #[cfg(feature = "docker")] {
+        #[cfg(feature = "windows")]
+        compile_error!("Select 'docker' and 'windows' are mutually exclusive")
         use tricore_docker as imp;
     } else if #[cfg(feature = "windows")] {
         use tricore_windows as imp;
     } else {
-        compile_error!("Features 'docker' and 'windows' are mutually exclusive")
+        compile_error!("Select a backend through the 'docker' and 'windows' features")
     }
 }
 
-pub type ChipInterface = ChipInterfaceImpl<imp::ChipInterface>;
+pub type ChipInterface = StandardChipInterface<imp::ChipInterface>;
 
-pub struct ChipInterfaceImpl<C: Chip> {
+/// Wraps a chip interface implementation
+pub struct StandardChipInterface<C: Chip> {
     implementation: C,
 }
 
-impl<C: Chip> ChipInterfaceImpl<C> {
+impl<C: Chip> StandardChipInterface<C> {
     /// Initiate a new connection to a chip
     pub fn new(interface_configuration: C::Config) -> anyhow::Result<Self> {
-        Ok(ChipInterfaceImpl {
+        Ok(StandardChipInterface {
             implementation: C::new(interface_configuration)?,
         })
     }

@@ -1,4 +1,3 @@
-//! Handles decoding of defmt byte streams, see [DefmtDecoder]
 use std::{
     fs,
     io::Write,
@@ -12,24 +11,22 @@ use elf::{endian::AnyEndian, ElfBytes};
 
 /// A structure that is able to decode a byte stream as defmt data
 ///
-/// This is implemented by spawning `defmt-print` and piping the output to the
-/// parents stdout. Note that this object implements [Write], so input data is
-/// written into this object through this trait.
+/// This object implements [Write], so input data is provided through this trait.
 pub struct DefmtDecoder {
     spawned_decoder: Child,
     rtt_symbol_address: u64,
 }
 
 impl DefmtDecoder {
-    /// Spawn a new process with the `defmt-print` utility
+    /// Create a decoder by spawning a new process with the `defmt-print` utility
     ///
     /// This function will fail if the user did not install the program, e.g. via
     /// `cargo install defmt-print`.
     pub fn spawn(elf_file: &Path) -> anyhow::Result<DefmtDecoder> {
         let elf_data = fs::read(elf_file).unwrap();
-        let elf = ElfBytes::<'_, AnyEndian>::minimal_parse(&elf_data).unwrap();
+        let parsed_elf = ElfBytes::<'_, AnyEndian>::minimal_parse(&elf_data).unwrap();
 
-        let (symbols, strings) = elf
+        let (symbols, strings) = parsed_elf
             .symbol_table()
             .with_context(|| "Could not parse symbol table from elf file")?
             .with_context(|| "Elf file does not have symbol table")?;

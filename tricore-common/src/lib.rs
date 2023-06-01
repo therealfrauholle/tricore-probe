@@ -22,7 +22,7 @@ pub trait Chip: Sized {
     /// RTT control block to the given decoder
     ///
     /// The function will return when the device halts, which happens when a
-    /// breakpoint is hit, e.g. `asm!("debug")`
+    /// breakpoint is hit, e.g. `asm!("debug")`.
     fn read_rtt<W: Write>(
         &self,
         rtt_control_block_address: u64,
