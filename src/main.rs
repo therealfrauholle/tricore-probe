@@ -1,18 +1,19 @@
 #![doc = include_str!("../README.md")]
+
 use std::path::PathBuf;
 use std::str::FromStr;
-
 use anyhow::Context;
 use clap::Parser;
 use colored::Colorize;
 
-pub mod backtrace;
-pub mod chip_interface;
-pub mod defmt;
-pub mod elf;
-use backtrace::ParseInfo;
-use chip_interface::ChipInterface;
-use defmt::DefmtDecoder;
+use crate::backtrace::decoding::ParseInfo;
+use crate::chip_interface::ChipInterface;
+use crate::defmt::DefmtDecoder;
+
+mod backtrace;
+mod chip_interface;
+mod defmt;
+mod elf;
 
 /// Rapidly prototype code on tricore chips
 #[derive(Parser, Debug)]
