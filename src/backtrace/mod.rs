@@ -1,3 +1,4 @@
+//! This module implements decoding stack trace information and their displaying
 use std::{
     collections::HashMap,
     path::Path,
