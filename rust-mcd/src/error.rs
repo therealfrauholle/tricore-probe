@@ -1,6 +1,11 @@
 use std::{ffi::CStr, fmt::Display};
 
-use crate::mcd_bindings::{mcd_core_st, mcd_error_info_st, MCD_ERR_NONE};
+use anyhow::Context;
+
+use crate::{
+    mcd_bindings::{mcd_core_st, mcd_error_info_st, MCD_ERR_NONE},
+    raw::McdReturnError,
+};
 
 use super::{core::Core, MCD_LIB};
 
@@ -18,6 +23,18 @@ pub fn get_error(core: Option<&'_ Core<'_>>) -> Option<Error> {
         Some(output.into())
     } else {
         None
+    }
+}
+
+/// Extension trait for [Result<R, McdReturnError>]
+pub trait McdError<R> {
+    /// Add error information, parsed from the MCD library
+    fn add_mcd_error_info<'a>(self, core: Option<&'a Core<'a>>) -> anyhow::Result<R>;
+}
+
+impl<R> McdError<R> for Result<R, McdReturnError> {
+    fn add_mcd_error_info<'a>(self, core: Option<&'a Core<'a>>) -> anyhow::Result<R> {
+        self.with_context(|| expect_error(core))
     }
 }
 

@@ -24,13 +24,13 @@ use crate::{
 
 #[derive(Debug)]
 pub struct Core<'a> {
-    pub core: &'a mcd_core_st,
+    pub core: *mut mcd_core_st,
     _core_connection: &'a mcd_core_con_info_st,
     payload_size: Cell<Option<u32>>,
 }
 
 impl<'a> Core<'a> {
-    pub fn new(core: &'a mcd_core_st, core_connection: &'a mcd_core_con_info_st) -> Self {
+    pub fn new(core: *mut mcd_core_st, core_connection: &'a mcd_core_con_info_st) -> Self {
         Core {
             core,
             _core_connection: core_connection,
@@ -51,7 +51,8 @@ impl<'a> Core<'a> {
 
     pub fn get_reset_classes(&self) -> anyhow::Result<impl Iterator<Item = ResetClass>> {
         let mut reset_classes = 0;
-        let result = unsafe { MCD_LIB.mcd_qry_rst_classes_f(self.core, &mut reset_classes) };
+        let result =
+            unsafe { MCD_LIB.mcd_qry_rst_classes_f(self.core, &mut reset_classes) };
         if result != 0 {
             return Err(expect_error(Some(self)))
                 .with_context(|| "Could not obtain a list of available reset classes");
@@ -62,20 +63,23 @@ impl<'a> Core<'a> {
             .map(|bit_set| ResetClass::construct_reset_class(self, bit_set)))
     }
     /// Query the state of the core
-    /// 
+    ///
     /// If specified this function will exit gracefully with the [Option::None] value
     /// when an expected event happens.
-    pub fn attempt_query_state(&self, tolerate_events: EventError) -> anyhow::Result<Option<CoreInfo>> {
+    pub fn attempt_query_state(
+        &self,
+        tolerate_events: EventError,
+    ) -> anyhow::Result<Option<CoreInfo>> {
         let mut output = mcd_core_state_st::default();
         let result = unsafe { MCD_LIB.mcd_qry_state_f(self.core, &mut output) };
 
         if result != 0 {
             let error = expect_error(Some(self));
-            
+
             if error.event_error_code().intersects(tolerate_events) {
-                return Ok(None)
+                return Ok(None);
             } else {
-                return Err(error).context("Could not query device state")
+                return Err(error).context("Could not query device state");
             }
         }
 
@@ -84,7 +88,8 @@ impl<'a> Core<'a> {
 
     /// Like [Self::attempt_query_state], but will never exit gracefully
     pub fn query_state(&self) -> anyhow::Result<CoreInfo> {
-        self.attempt_query_state(EventError::empty()).map(|o| o.unwrap())
+        self.attempt_query_state(EventError::empty())
+            .map(|o| o.unwrap())
     }
 
     fn query_payload_size(&self) -> u32 {
@@ -93,7 +98,8 @@ impl<'a> Core<'a> {
         }
 
         let mut max_payload = 0;
-        let result = unsafe { MCD_LIB.mcd_qry_max_payload_size_f(self.core, &mut max_payload) };
+        let result =
+            unsafe { MCD_LIB.mcd_qry_max_payload_size_f(self.core, &mut max_payload) };
         assert_eq!(result, 0);
         self.payload_size.replace(Some(max_payload));
         log::trace!("Maximum payload is {}", max_payload);
@@ -117,7 +123,8 @@ impl<'a> Core<'a> {
                 num_tx: 1,
                 num_tx_ok: 0,
             };
-            let result = unsafe { MCD_LIB.mcd_execute_txlist_f(self.core, &mut transaction_list) };
+            let result =
+                unsafe { MCD_LIB.mcd_execute_txlist_f(self.core, &mut transaction_list) };
             if result != 0 {
                 return Err(expect_error(Some(self)))
                     .with_context(|| "Internal MCD library eror while trying to read data");
@@ -147,7 +154,8 @@ impl<'a> Core<'a> {
                 num_tx_ok: 0,
             };
 
-            let result = unsafe { MCD_LIB.mcd_execute_txlist_f(self.core, &mut transaction_list) };
+            let result =
+                unsafe { MCD_LIB.mcd_execute_txlist_f(self.core, &mut transaction_list) };
 
             if result != 0 {
                 return Err(expect_error(Some(self)))
@@ -288,7 +296,11 @@ impl<'a> Trigger<'a> {
     pub fn get_state(&self) -> anyhow::Result<TriggerState> {
         let mut state_output = mcd_trig_state_st::default();
         let result = unsafe {
-            MCD_LIB.mcd_qry_trig_state_f(self.core.core, self.trigger_id, &mut state_output)
+            MCD_LIB.mcd_qry_trig_state_f(
+                self.core.core,
+                self.trigger_id,
+                &mut state_output,
+            )
         };
         if result != 0 {
             return Err(expect_error(Some(self.core)))

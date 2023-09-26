@@ -35,24 +35,3 @@ pub fn init() {
     let result = unsafe { MCD_LIB.mcd_initialize_f(&version_requirement, &mut output) };
     assert_eq!(result, 0);
 }
-
-pub fn scan_open_servers() -> anyhow::Result<u32> {
-    log::trace!("Scanning for open servers");
-    let host = b"localhost\0";
-    let mut num_open_servers = 0u32;
-    let result = unsafe {
-        MCD_LIB.mcd_qry_servers_f(
-            host.as_ptr() as *const i8,
-            1,
-            0,
-            &mut num_open_servers,
-            core::ptr::null_mut(),
-        )
-    };
-
-    if result != 0 {
-        Err(expect_error(None)).with_context(|| "MCD Library reported an error")
-    } else {
-        Ok(num_open_servers)
-    }
-}
