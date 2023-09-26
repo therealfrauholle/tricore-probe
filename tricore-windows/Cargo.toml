@@ -16,3 +16,6 @@ tricore-common = { path = "../tricore-common" }
 
 [build-dependencies]
 bindgen = "0.64.0"
+
+[features]
+dasv8 = ["rust-mcd/dasv8"]

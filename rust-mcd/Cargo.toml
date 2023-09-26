@@ -15,3 +15,7 @@ bitflags = "2.4.0"
 
 [build-dependencies]
 bindgen = "0.64.0"
+
+[features]
+# Enable if using DAS version 8 over version 7
+dasv8 = []
