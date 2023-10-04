@@ -33,7 +33,7 @@ struct Args {
 
     /// Path to the binary
     #[arg(value_parser = existing_path)]
-    elf: PathBuf,
+    elf: Option<PathBuf>,
 
     /// Configuration for the backend
     #[command(flatten)]
@@ -66,11 +66,18 @@ fn main() -> anyhow::Result<()> {
 
     let mut command_server = ChipInterface::new(args.backend)?;
 
-    if args.list_devices {
+    let elf_path = if args.list_devices {
         let scanned_devices = command_server.list_devices()?;
         pretty_print_devices(&scanned_devices);
         return Ok(());
-    }
+    } else {
+        let Some(elf_path) = args.elf else {
+            // FIXME: This can be done with clap, I am not sure how
+            bail!("If not used with --list-devices, an elf path must be specified")
+        };
+        
+        elf_path
+    };
 
     if let Some(device) = args.device {
         let scanned_devices = command_server.list_devices().with_context(|| {
@@ -95,19 +102,19 @@ fn main() -> anyhow::Result<()> {
     }
 
     if !args.no_flash {
-        command_server.flash_elf(args.elf.as_path(), args.halt_memtool)?;
+        command_server.flash_elf(elf_path.as_path(), args.halt_memtool)?;
     } else {
         log::warn!("Flashing skipped - this might lead to malformed defmt data!")
     }
 
-    let mut defmt_decoder = DefmtDecoder::spawn(args.elf.as_path())?;
+    let mut defmt_decoder = DefmtDecoder::spawn(elf_path.as_path())?;
 
     let backtrace = command_server.read_rtt(
         defmt_decoder.rtt_control_block_address(),
         &mut defmt_decoder,
     )?;
 
-    let backtrace_info = backtrace.addr2line(args.elf.as_path())?;
+    let backtrace_info = backtrace.addr2line(elf_path.as_path())?;
 
     println!("{}", "Device halted, backtrace as follows".red());
     backtrace_info.log_stdout();
