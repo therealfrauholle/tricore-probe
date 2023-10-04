@@ -10,12 +10,12 @@ pub mod backtrace;
 pub mod chip_interface;
 pub mod defmt;
 pub mod elf;
+pub mod list_devices;
 use backtrace::ParseInfo;
 use chip_interface::ChipInterface;
 use defmt::DefmtDecoder;
 use env_logger::{Builder, Target};
 use log::LevelFilter;
-use tricore_windows::DeviceSelection;
 
 /// Simple program to flash and interface with tricore chips
 #[derive(Parser, Debug)]
@@ -27,6 +27,10 @@ struct Args {
     /// Set this flag to print a list of available devices and exit
     #[arg(long, default_value_t = false)]
     list_devices: bool,
+
+    /// Show the list_devices option
+    #[arg(long, default_value_t = false)]
+    machine_output: bool,
 
     #[arg(short, long)]
     device: Option<String>,
@@ -68,7 +72,11 @@ fn main() -> anyhow::Result<()> {
 
     let elf_path = if args.list_devices {
         let scanned_devices = command_server.list_devices()?;
-        pretty_print_devices(&scanned_devices);
+        if args.machine_output {
+            list_devices::machine_output(&scanned_devices);
+        } else {
+            list_devices::pretty_print_devices(&scanned_devices);
+        }
         return Ok(());
     } else {
         let Some(elf_path) = args.elf else {
@@ -91,7 +99,7 @@ fn main() -> anyhow::Result<()> {
         match matched_devices.len() {
             0 => {
                 println!("Cannot find device matching filter \"{device}\"");
-                pretty_print_devices(&scanned_devices);
+                list_devices::pretty_print_devices(&scanned_devices);
                 bail!("Cannot connect to device")
             }
             1 => command_server.connect(Some(matched_devices[0]))?,
@@ -132,15 +140,4 @@ enum LogLevel {
 
 fn existing_path(input_path: &str) -> anyhow::Result<PathBuf> {
     PathBuf::from_str(input_path).with_context(|| "Value is not a correct path")
-}
-
-fn pretty_print_devices(devices: &Vec<DeviceSelection>) {
-    if devices.len() == 0 {
-        println!("No devices available");
-        return;
-    }
-    println!("Found {} devices:", devices.len());
-    for (index, scanned_device) in devices.iter().enumerate() {
-        println!("Device {index}: {:?}", scanned_device.info.acc_hw())
-    }
 }
