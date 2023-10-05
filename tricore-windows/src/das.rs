@@ -25,5 +25,4 @@ pub fn run_console() {
 
     log::info!("DAS server started");
     let result = udas_console.wait().expect("UDAS Console aborted");
-    assert!(result.success());
 }
