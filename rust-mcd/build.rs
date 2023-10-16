@@ -1,5 +1,7 @@
 use std::{env, fs::File, io::Write, path::PathBuf};
 
+use bindgen::{callbacks::{ParseCallbacks, TypeKind}, CargoCallbacks, EnumVariation};
+
 fn main() {
     let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
     let bindings_file = out_path.join("bindings.rs");
@@ -40,9 +42,20 @@ fn main() {
             .clang_args(CLANG_ARGS)
             .dynamic_library_name("DynamicMCDxDAS")
             .derive_default(true)
-            // Tell cargo to invalidate the built crate whenever any of the
-            // included header files changed.
-            .parse_callbacks(Box::new(bindgen::CargoCallbacks))
+            .default_enum_style(EnumVariation::Rust {
+                non_exhaustive: false,
+            })
+            // Enums that were identified to be non-exclusive
+            // TODO: What about mcd_trace_type_et and mcd_trace_mode_et?
+            .bitfield_enum("enum_mcd_error_event_et")
+            .bitfield_enum("enum_mcd_mem_type_et")
+            .bitfield_enum("enum_mcd_trig_type_et")
+            .bitfield_enum("enum_mcd_trig_opt_et")
+            .bitfield_enum("enum_mcd_trig_action_et")
+            .bitfield_enum("enum_mcd_tx_access_opt_et")
+            .bitfield_enum("enum_mcd_core_event_et")
+            .bitfield_enum("enum_mcd_chl_attributes_et")
+            .bitfield_enum("enum_mcd_trace_marker_et")
             // Finish the builder and generate the bindings.
             .generate()
             // Unwrap the Result and panic on failure.
@@ -52,5 +65,83 @@ fn main() {
         bindings
             .write_to_file(bindings_file)
             .expect("Couldn't write bindings!");
+    }
+}
+
+#[derive(Debug)]
+pub struct McdCallbacks(CargoCallbacks);
+
+impl ParseCallbacks for McdCallbacks {
+    fn will_parse_macro(&self, name: &str) -> bindgen::callbacks::MacroParsingBehavior {
+        self.0.will_parse_macro(name)
+    }
+
+    fn generated_name_override(
+        &self,
+        item_info: bindgen::callbacks::ItemInfo<'_>,
+    ) -> Option<String> {
+        self.0.generated_name_override(item_info)
+    }
+
+    fn int_macro(&self, name: &str, value: i64) -> Option<bindgen::callbacks::IntKind> {
+        self.0.int_macro(name, value)
+    }
+
+    fn str_macro(&self, name: &str, value: &[u8]) {
+        self.0.str_macro(name, value)
+    }
+
+    fn func_macro(&self, name: &str, value: &[&[u8]]) {
+        self.0.func_macro(name, value)
+    }
+
+    fn enum_variant_behavior(
+        &self,
+        enum_name: Option<&str>,
+        original_variant_name: &str,
+        variant_value: bindgen::callbacks::EnumVariantValue,
+    ) -> Option<bindgen::callbacks::EnumVariantCustomBehavior> {
+        self.0
+            .enum_variant_behavior(enum_name, original_variant_name, variant_value)
+    }
+
+    fn enum_variant_name(
+        &self,
+        enum_name: Option<&str>,
+        original_variant_name: &str,
+        variant_value: bindgen::callbacks::EnumVariantValue,
+    ) -> Option<String> {
+        self.0
+            .enum_variant_name(enum_name, original_variant_name, variant_value)
+    }
+
+    fn item_name(&self, original_item_name: &str) -> Option<String> {
+        self.0.item_name(original_item_name)
+    }
+
+    fn include_file(&self, filename: &str) {
+        self.0.include_file(filename)
+    }
+
+    fn blocklisted_type_implements_trait(
+        &self,
+        name: &str,
+        derive_trait: bindgen::callbacks::DeriveTrait,
+    ) -> Option<bindgen::callbacks::ImplementsTrait> {
+        self.0.blocklisted_type_implements_trait(name, derive_trait)
+    }
+
+    fn add_derives(&self, info: &bindgen::callbacks::DeriveInfo<'_>) -> Vec<String> {
+        let mut original_derives = Vec::new();
+
+        if info.kind == TypeKind::Enum {
+            original_derives.push("num_enum::TryFromPrimitive".to_owned());
+        }
+
+        original_derives
+    }
+
+    fn process_comment(&self, comment: &str) -> Option<String> {
+        self.0.process_comment(comment)
     }
 }

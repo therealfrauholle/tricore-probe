@@ -11,13 +11,10 @@ use crate::{
     breakpoint::TriggerType,
     error::{expect_error, EventError},
     mcd_bindings::{
+        enum_mcd_core_event_et, enum_mcd_core_state_et, enum_mcd_core_step_type_et,
         mcd_core_con_info_st, mcd_core_event_et, mcd_core_st, mcd_core_state_et, mcd_core_state_st,
         mcd_trig_set_state_st, mcd_trig_simple_core_st, mcd_trig_state_st, mcd_tx_st,
-        mcd_txlist_st, MCD_CORE_EVENT_CHL_PENDING, MCD_CORE_EVENT_MEMORY_CHANGE,
-        MCD_CORE_EVENT_REGISTER_CHANGE, MCD_CORE_EVENT_STOPPED, MCD_CORE_EVENT_TRACE_CHANGE,
-        MCD_CORE_EVENT_TRIGGER_CHANGE, MCD_CORE_STATE_CUSTOM_HI, MCD_CORE_STATE_CUSTOM_LO,
-        MCD_CORE_STATE_DEBUG, MCD_CORE_STATE_HALTED, MCD_CORE_STATE_RUNNING,
-        MCD_CORE_STATE_UNKNOWN, MCD_CORE_STEP_TYPE_INSTR, TRUE,
+        mcd_txlist_st, TRUE,
     },
     transaction::{create_transaction, Type},
 };
@@ -51,8 +48,7 @@ impl<'a> Core<'a> {
 
     pub fn get_reset_classes(&self) -> anyhow::Result<impl Iterator<Item = ResetClass>> {
         let mut reset_classes = 0;
-        let result =
-            unsafe { MCD_LIB.mcd_qry_rst_classes_f(self.core, &mut reset_classes) };
+        let result = unsafe { MCD_LIB.mcd_qry_rst_classes_f(self.core, &mut reset_classes) };
         if result != 0 {
             return Err(expect_error(Some(self)))
                 .with_context(|| "Could not obtain a list of available reset classes");
@@ -98,8 +94,7 @@ impl<'a> Core<'a> {
         }
 
         let mut max_payload = 0;
-        let result =
-            unsafe { MCD_LIB.mcd_qry_max_payload_size_f(self.core, &mut max_payload) };
+        let result = unsafe { MCD_LIB.mcd_qry_max_payload_size_f(self.core, &mut max_payload) };
         assert_eq!(result, 0);
         self.payload_size.replace(Some(max_payload));
         log::trace!("Maximum payload is {}", max_payload);
@@ -123,8 +118,7 @@ impl<'a> Core<'a> {
                 num_tx: 1,
                 num_tx_ok: 0,
             };
-            let result =
-                unsafe { MCD_LIB.mcd_execute_txlist_f(self.core, &mut transaction_list) };
+            let result = unsafe { MCD_LIB.mcd_execute_txlist_f(self.core, &mut transaction_list) };
             if result != 0 {
                 return Err(expect_error(Some(self)))
                     .with_context(|| "Internal MCD library eror while trying to read data");
@@ -154,8 +148,7 @@ impl<'a> Core<'a> {
                 num_tx_ok: 0,
             };
 
-            let result =
-                unsafe { MCD_LIB.mcd_execute_txlist_f(self.core, &mut transaction_list) };
+            let result = unsafe { MCD_LIB.mcd_execute_txlist_f(self.core, &mut transaction_list) };
 
             if result != 0 {
                 return Err(expect_error(Some(self)))
@@ -185,9 +178,14 @@ impl<'a> Core<'a> {
     }
 
     pub fn step(&self) -> anyhow::Result<()> {
-        let step_type = MCD_CORE_STEP_TYPE_INSTR as u32;
-
-        let result = unsafe { MCD_LIB.mcd_step_f(self.core, 0, step_type, 1) };
+        let result = unsafe {
+            MCD_LIB.mcd_step_f(
+                self.core,
+                0,
+                enum_mcd_core_step_type_et::MCD_CORE_STEP_TYPE_INSTR as u32,
+                1,
+            )
+        };
 
         if result != 0 {
             Err(expect_error(Some(self))).with_context(|| "Internal library reported an error")
@@ -296,11 +294,7 @@ impl<'a> Trigger<'a> {
     pub fn get_state(&self) -> anyhow::Result<TriggerState> {
         let mut state_output = mcd_trig_state_st::default();
         let result = unsafe {
-            MCD_LIB.mcd_qry_trig_state_f(
-                self.core.core,
-                self.trigger_id,
-                &mut state_output,
-            )
+            MCD_LIB.mcd_qry_trig_state_f(self.core.core, self.trigger_id, &mut state_output)
         };
         if result != 0 {
             return Err(expect_error(Some(self.core)))
@@ -345,14 +339,15 @@ pub struct CoreEvents {
 
 impl From<mcd_core_event_et> for CoreEvents {
     fn from(value: mcd_core_event_et) -> Self {
-        let value = value as i32;
+        let value = enum_mcd_core_event_et(value);
         CoreEvents {
-            memory_change: (value & MCD_CORE_EVENT_MEMORY_CHANGE) != 0,
-            register_changed: (value & MCD_CORE_EVENT_REGISTER_CHANGE) != 0,
-            trace_changed: (value & MCD_CORE_EVENT_TRACE_CHANGE) != 0,
-            trigger_changed: (value & MCD_CORE_EVENT_TRIGGER_CHANGE) != 0,
-            stopped: (value & MCD_CORE_EVENT_STOPPED) != 0,
-            chl_pending: (value & MCD_CORE_EVENT_CHL_PENDING) != 0,
+            memory_change: (value & enum_mcd_core_event_et::MCD_CORE_EVENT_MEMORY_CHANGE).0 != 0,
+            register_changed: (value & enum_mcd_core_event_et::MCD_CORE_EVENT_REGISTER_CHANGE).0
+                != 0,
+            trace_changed: (value & enum_mcd_core_event_et::MCD_CORE_EVENT_TRACE_CHANGE).0 != 0,
+            trigger_changed: (value & enum_mcd_core_event_et::MCD_CORE_EVENT_TRIGGER_CHANGE).0 != 0,
+            stopped: (value & enum_mcd_core_event_et::MCD_CORE_EVENT_STOPPED).0 != 0,
+            chl_pending: (value & enum_mcd_core_event_et::MCD_CORE_EVENT_CHL_PENDING).0 != 0,
         }
     }
 }
@@ -368,13 +363,15 @@ pub enum CoreState {
 
 impl From<mcd_core_state_et> for CoreState {
     fn from(value: mcd_core_state_et) -> Self {
-        let value = value as i32;
         match value {
-            _ if value == MCD_CORE_STATE_UNKNOWN => Self::Unknown,
-            _ if value == MCD_CORE_STATE_RUNNING => Self::Running,
-            _ if value == MCD_CORE_STATE_HALTED => Self::Halted,
-            _ if value == MCD_CORE_STATE_DEBUG => Self::Debug,
-            _ if (MCD_CORE_STATE_CUSTOM_LO..MCD_CORE_STATE_CUSTOM_HI).contains(&value) => {
+            _ if value == (enum_mcd_core_state_et::MCD_CORE_STATE_UNKNOWN as u32) => Self::Unknown,
+            _ if value == (enum_mcd_core_state_et::MCD_CORE_STATE_RUNNING as u32) => Self::Running,
+            _ if value == (enum_mcd_core_state_et::MCD_CORE_STATE_HALTED as u32) => Self::Halted,
+            _ if value == (enum_mcd_core_state_et::MCD_CORE_STATE_DEBUG as u32) => Self::Debug,
+            _ if ((enum_mcd_core_state_et::MCD_CORE_STATE_CUSTOM_LO as u32)
+                ..(enum_mcd_core_state_et::MCD_CORE_STATE_CUSTOM_HI as u32))
+                .contains(&value) =>
+            {
                 Self::Custom
             }
             _ => panic!("Invalid state {value}"),

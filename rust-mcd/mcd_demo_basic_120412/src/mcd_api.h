@@ -212,7 +212,7 @@ extern "C" {
     need to have values between \c MCD_RET_ACT_CUSTOM_LO and \c MCD_RET_ACT_CUSTOM_HI.
 */
 typedef uint32_t mcd_return_et;
-enum {
+enum enum_mcd_return_et : uint32_t {
     MCD_RET_ACT_NONE         = 0x00000000 , /**< No special action required.                      */
     MCD_RET_ACT_AGAIN        = 0x00000001 , /**< Try to call the function again.                  */
     MCD_RET_ACT_HANDLE_EVENT = 0x00000002 , /**< Handle the event or events.                      */
@@ -242,7 +242,7 @@ enum {
                                                   defined semantics.
 */
 typedef uint32_t mcd_error_code_et;
-enum {
+enum enum_mcd_error_code_et : uint32_t {
     MCD_ERR_NONE                        = 0,            /**< No error.                                                      */
 
     MCD_ERR_FN_UNIMPLEMENTED            = 0x0100,       /**< Called function is not implemented.                            */
@@ -304,7 +304,7 @@ enum {
     Reserved error event codes must not be used.
 */
 typedef uint32_t mcd_error_event_et;
-enum {
+enum enum_mcd_error_event_et : uint32_t {
     MCD_ERR_EVT_NONE         = 0x00000000 , /**< No action required due to an event.              */
     MCD_ERR_EVT_RESET        = 0x00000001 , /**< Target has been reset.                           */
     MCD_ERR_EVT_PWRDN        = 0x00000002 , /**< Target has been a powered down.                  */
@@ -323,7 +323,7 @@ enum {
     further extend the address information.
 */
 typedef uint32_t mcd_addr_space_type_et;
-enum {
+enum enum_mcd_addr_space_type_et : uint32_t {
     MCD_NOTUSED_ID    = 0,    /**< Address space ID is not used.                                            */
     MCD_OVERLAY_ID    = 1,    /**< Address space ID represents the memory overlay the address is valid in.  */
     MCD_MEMBANK_ID    = 2,    /**< Address space ID represents the memory bank the address is valid in.     */
@@ -344,7 +344,7 @@ enum {
     Reserved memory space types must not be used.
 */
 typedef uint32_t mcd_mem_type_et;
-enum {
+enum enum_mcd_mem_type_et : uint32_t {
     MCD_MEM_SPACE_DEFAULT     = 0x00000000, /**< The memory space is of none of the types below. */
     MCD_MEM_SPACE_IS_REGISTERS= 0x00000001, /**< The memory space contains only registers.       */
     MCD_MEM_SPACE_IS_PROGRAM  = 0x00000002, /**< The memory space is a program memory.           */
@@ -368,7 +368,7 @@ enum {
     part of.
 */
 typedef uint32_t mcd_endian_et;
-enum {
+enum enum_mcd_endian_et : uint32_t {
     MCD_ENDIAN_DEFAULT =  0, /**< Endianness as defined by the target architecture
                                   or parent module (if available).                   */
     MCD_ENDIAN_LITTLE  =  1, /**< Little Endian data representation.                 */
@@ -382,7 +382,7 @@ enum {
     This enumeration type describes the three register types.
 */
 typedef uint32_t mcd_reg_type_et;
-enum {
+enum enum_mcd_reg_type_et : uint32_t {
     MCD_REG_TYPE_SIMPLE   = 0, /**< Simple register.                                          */
     MCD_REG_TYPE_COMPOUND = 1, /**< Compound register composed more than one simple register. */
     MCD_REG_TYPE_PARTIAL  = 2, /**< Register that is part of a simple register.               */
@@ -400,7 +400,7 @@ enum {
     \c MCD_TRIG_TYPE_CUSTOM_HI.
  */
 typedef uint32_t mcd_trig_type_et;
-enum {
+enum enum_mcd_trig_type_et : uint32_t {
     MCD_TRIG_TYPE_UNDEFINED = 0x00000000, /**< Undefined trigger type.                                                   */
     MCD_TRIG_TYPE_IP        = 0x00000001, /**< Trigger on a changing instruction pointer.                                */
     MCD_TRIG_TYPE_READ      = 0x00000002, /**< Trigger on a read data access to a specific address or address range.     */
@@ -425,7 +425,7 @@ enum {
     \c MCD_TRIG_OPT_CUSTOM_LO and \c MCD_TRIG_OPT_CUSTOM_HI.
 */
 typedef uint32_t mcd_trig_opt_et;
-enum {
+enum enum_mcd_trig_opt_et : uint32_t {
     MCD_TRIG_OPT_DEFAULT                = 0x00000000, /**< Default trigger options, e.g. chosen by the platform.               */
     MCD_TRIG_OPT_IMPL_HARDWARE          = 0x00000001, /**< The trigger shall be implemented by hardware.                       */
     MCD_TRIG_OPT_IMPL_SOFTWARE          = 0x00000002, /**< The trigger shall be implemented by software (code substitution).   */
@@ -467,7 +467,7 @@ enum {
     between \c MCD_TRIG_ACTION_CUSTOM_LO and \c MCD_TRIG_ACTION_CUSTOM_HI.
  */
 typedef uint32_t mcd_trig_action_et;
-enum {
+enum enum_mcd_trig_action_et : uint32_t {
     MCD_TRIG_ACTION_DEFAULT               = 0x00000000,   /**< No action has to be taken except from setting the
                                                                trigger to be captured.                                    */
     MCD_TRIG_ACTION_DBG_DEBUG             = 0x00000001,   /**< Stop this core and bring it into debug mode.               */
@@ -514,7 +514,7 @@ enum {
     of a transaction list.
  */
 typedef uint32_t mcd_tx_access_type_et;
-enum {
+enum enum_mcd_tx_access_type_et : uint32_t {
     MCD_TX_AT_R    = 0x00000001,    /**< Read access transaction.                               */
     MCD_TX_AT_W    = 0x00000002,    /**< Write access transaction.                              */
     MCD_TX_AT_RW   = 0x00000003,    /**< Read then write access transaction (atomic swap).      */
@@ -535,7 +535,7 @@ enum {
     for this core connection.
 */
 typedef uint32_t mcd_tx_access_opt_et;
-enum {
+enum enum_mcd_tx_access_opt_et : uint32_t {
     MCD_TX_OPT_DEFAULT            = 0x00000000,   /**< MCD implementation decides on applied access options. */
     MCD_TX_OPT_SIDE_EFFECTS       = 0x00000001,   /**< Trigger side effects for the access.                  */
     MCD_TX_OPT_NO_SIDE_EFFECTS    = 0x00000002,   /**< Omit side effects for the access.                     */
@@ -571,7 +571,7 @@ enum {
     are reserved for future API extensions and must not be used.
  */
 typedef uint32_t mcd_core_step_type_et;
-enum {
+enum enum_mcd_core_step_type_et : uint32_t {
     MCD_CORE_STEP_TYPE_CYCLES      = 0x00000001, /**< Step the core for core specific cycles.       */
     MCD_CORE_STEP_TYPE_INSTR       = 0x00000002, /**< Step the core for core specific instructions. */
     MCD_CORE_STEP_TYPE_RESERVED_LO = 0x00000004, /**< Begin Range: Reserved for future API use.     */
@@ -594,7 +594,7 @@ enum {
     and \c MCD_CORE_STATE_CUSTOM_HI.
  */
 typedef uint32_t mcd_core_state_et;
-enum {
+enum enum_mcd_core_state_et : uint32_t {
     MCD_CORE_STATE_UNKNOWN    = 0x00000000,   /**< Target core state is unknown.            */
     MCD_CORE_STATE_RUNNING    = 0x00000001,   /**< Target core is running.                  */
     MCD_CORE_STATE_HALTED     = 0x00000002,   /**< Target core is halted.                   */
@@ -615,7 +615,7 @@ enum {
     and \c MCD_CORE_EVENT_CUSTOM_HI.
  */
 typedef uint32_t mcd_core_event_et;
-enum {
+enum enum_mcd_core_event_et : uint32_t {
     MCD_CORE_EVENT_NONE            = 0x00000000,   /**< No since the last poll.                                 */
     MCD_CORE_EVENT_MEMORY_CHANGE   = 0x00000001,   /**< Memory content has changed.                             */
     MCD_CORE_EVENT_REGISTER_CHANGE = 0x00000002,   /**< Register contents have changed.                         */
@@ -638,7 +638,7 @@ enum {
     have values between \c MCD_CHL_TYPE_CUSTOM_LO and \c MCD_CHL_TYPE_CUSTOM_HI.
 */
 typedef uint32_t mcd_chl_type_et;
-enum {
+enum enum_mcd_chl_type_et : uint32_t {
     MCD_CHL_TYPE_COMMON    = 0x00000001,    /**<Common communication channel to the target.            */
     MCD_CHL_TYPE_CONFIG    = 0x00000002,    /**<Communication channel for configuration purposes,
                                                 e.g. to configure the analysis setup.                  */
@@ -658,7 +658,7 @@ enum {
     of them.
 */
 typedef uint32_t mcd_chl_attributes_et;
-enum {
+enum enum_mcd_chl_attributes_et : uint32_t {
     MCD_CHL_AT_RCV           = 0x00000001,    /**< Receive channel.                */
     MCD_CHL_AT_SND           = 0x00000002,    /**< Send channel.                   */
     MCD_CHL_AT_MEM_MAPPED    = 0x00000040,    /**< Channel is memory mapped.       */
@@ -674,7 +674,7 @@ enum {
     and \c MCD_TRACE_TYPE_CUSTOM_HI.
  */
 typedef uint32_t mcd_trace_type_et;
-enum {
+enum enum_mcd_trace_type_et : uint32_t {
     MCD_TRACE_TYPE_UNKNOWN    = 0x00000000,   /**< Unknown trace source.                        */
     MCD_TRACE_TYPE_CORE       = 0x00000001,   /**< Traces the instruction and (optional)
                                                    data trace stream as seen from the core.     */
@@ -698,7 +698,7 @@ enum {
 
 */
 typedef uint32_t mcd_trace_format_et;
-enum {
+enum enum_mcd_trace_format_et : uint32_t {
     MCD_TRACE_FORMAT_UNKNOWN              = 0x00000000,   /**< Trace data format not readable via API.                           */
     MCD_TRACE_FORMAT_CORE_FETCH           = 0x00000001,   /**< Execution trace extracted from bus fetch cycles
                                                                (use struct \ref mcd_trace_data_core_st for this format).          */
@@ -727,7 +727,7 @@ enum {
     \c MCD_TRACE_MODE_CUSTOM_LO and \c MCD_TRACE_MODE_CUSTOM_HI.
  */
 typedef uint32_t mcd_trace_mode_et;
-enum {
+enum enum_mcd_trace_mode_et : uint32_t {
     MCD_TRACE_MODE_NOCHANGE   = 0x00000000,   /**< Do not change trace buffer mode.              */
     MCD_TRACE_MODE_FIFO       = 0x00000001,   /**< Circular trace buffer.                        */
     MCD_TRACE_MODE_STACK      = 0x00000002,   /**< Trace stops when buffer is full.              */
@@ -747,7 +747,7 @@ enum {
     \c MCD_TRACE_STATE_CUSTOM_LO and \c MCD_TRACE_STATE_CUSTOM_HI.
  */
 typedef uint32_t mcd_trace_state_et;
-enum {
+enum enum_mcd_trace_state_et : uint32_t {
     MCD_TRACE_STATE_NOCHANGE   = 0x00000000,   /**< Do not change state (only for \ref mcd_set_trace_state_f()).                       */
     MCD_TRACE_STATE_DISABLE    = 0x00000001,   /**< Trace is disabled and no resources are allocated.                                  */
     MCD_TRACE_STATE_OFF        = 0x00000002,   /**< Trace is off and does not trace data, but is ready for tracing.                    */
@@ -770,7 +770,7 @@ enum {
 
  */
 typedef uint32_t mcd_trace_marker_et;
-enum {
+enum enum_mcd_trace_marker_et : uint32_t {
     MCD_TRACE_MARKER_NONE      = 0x00000000,   /**< No marker set.                                                        */
     MCD_TRACE_MARKER_RUN       = 0x00000001,   /**< Core has started execution in this trace frame (first cycle).         */
     MCD_TRACE_MARKER_DEBUG     = 0x00000002,   /**< Core has stopped execution in this trace frame (last cycle).          */
@@ -790,7 +790,7 @@ enum {
     between \c MCD_TRACE_CYCLE_CUSTOM_LO and \c MCD_TRACE_CYCLE_CUSTOM_HI.
  */
 typedef uint32_t mcd_trace_cycle_et;
-enum {
+enum enum_mcd_trace_cycle_et : uint32_t {
     MCD_TRACE_CYCLE_UNKNOWN    = 0x00000000,   /**< Trave cycle contains no valid data for this core.                   */
     MCD_TRACE_CYCLE_NONE       = 0x00000001,   /**< No trace cycle, control information (marker, timestamp) is valid.   */
     MCD_TRACE_CYCLE_EXECUTE    = 0x00000002,   /**< Program execution cycle, marks the execution of one instruction.

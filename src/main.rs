@@ -83,7 +83,7 @@ fn main() -> anyhow::Result<()> {
             // FIXME: This can be done with clap, I am not sure how
             bail!("If not used with --list-devices, an elf path must be specified")
         };
-        
+
         elf_path
     };
 

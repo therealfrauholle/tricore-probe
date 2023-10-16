@@ -3,7 +3,7 @@ use std::{ffi::CStr, fmt::Display};
 use anyhow::Context;
 
 use crate::{
-    mcd_bindings::{mcd_core_st, mcd_error_info_st, MCD_ERR_NONE},
+    mcd_bindings::{mcd_core_st, mcd_error_info_st, enum_mcd_error_code_et},
     raw::McdReturnError,
 };
 
@@ -19,7 +19,7 @@ pub fn get_error(core: Option<&'_ Core<'_>>) -> Option<Error> {
         .map(|core| core.core as *const mcd_core_st)
         .unwrap_or(std::ptr::null());
     unsafe { MCD_LIB.mcd_qry_error_info_f(core_reference, &mut output) };
-    if output.return_status != MCD_ERR_NONE as u32 {
+    if output.return_status != enum_mcd_error_code_et::MCD_ERR_NONE as u32 {
         Some(output.into())
     } else {
         None
@@ -49,7 +49,7 @@ pub struct Error {
 }
 
 impl Error {
-    pub fn error_code(&self) -> McdErrorCode {
+    pub fn error_code(&self) -> enum_mcd_error_code_et {
         McdErrorCode::from_code(self.inner.error_code)
     }
 
@@ -105,103 +105,5 @@ impl core::fmt::Debug for EventError {
         }
 
         debug.finish()
-    }
-}
-
-/// See the original header files for [crate::mcd_bindings::mcd_error_code_et]
-#[derive(Debug)]
-pub enum McdErrorCode {
-    /// No error.
-    McdErrNone,
-    /// Called function is not implemented.
-    McdErrFnUnimplemented,
-    /// MCD API not correctly used.
-    McdErrUsage,
-    /// Passed invalid parameter.
-    McdErrParam,
-    /// Server connection error.
-    McdErrConnection,
-    /// Function call timed out.
-    McdErrTimedOut,
-    /// General error.
-    McdErrGeneral,
-    /// String to return is longer than the provided character array.
-    McdErrResultTooLong,
-    /// Could not start server.
-    McdErrCouldNotStartServer,
-    /// Server is locked.
-    McdErrServerLocked,
-    /// No memory spaces defined.
-    McdErrNoMemSpaces,
-    /// No memory blocks defined for the requested memory space.
-    McdErrNoMemBlocks,
-    /// No memory space with requested ID exists.
-    McdErrMemSpaceId,
-    /// No register groups defined.
-    McdErrNoRegGroups,
-    /// No register group with requested ID exists.
-    McdErrRegGroupId,
-    /// Register is not a compound register.
-    McdErrRegNotCompound,
-    /// Error retrieving overlay information.
-    McdErrOverlays,
-    /// Cannot access device (power-down, reset active, etc.).
-    McdErrDeviceAccess,
-    /// Device is locked.
-    McdErrDeviceLocked,
-    /// Read transaction of transaction list has failed.
-    McdErrTxlistRead,
-    /// Write transaction of transaction list has failed.
-    McdErrTxlistWrite,
-    /// Other error (no R/W failure) for a transaction of the transaction list.
-    McdErrTxlistTx,
-    /// Requested channel type is not supported by the implementation.
-    McdErrChlTypeNotSupported,
-    /// Addressed target does not support communication channels.
-    McdErrChlTargetNotSupported,
-    /// Channel setup is invalid or contains unsupported attributes.
-    McdErrChlSetup,
-    /// Sending or receiving of the last message has failed.
-    McdErrChlMessageFailed,
-    /// Trigger could not be created.
-    McdErrTrigCreate,
-    /// Error during trigger information access.
-    McdErrTrigAccess,
-    /// Library reported unknown error code
-    Unknown(u32),
-}
-impl McdErrorCode {
-    pub fn from_code(code: u32) -> Self {
-        match code {
-            0 => Self::McdErrNone,
-            256 => Self::McdErrFnUnimplemented,
-            257 => Self::McdErrUsage,
-            258 => Self::McdErrParam,
-            512 => Self::McdErrConnection,
-            513 => Self::McdErrTimedOut,
-            3840 => Self::McdErrGeneral,
-            4096 => Self::McdErrResultTooLong,
-            4352 => Self::McdErrCouldNotStartServer,
-            4353 => Self::McdErrServerLocked,
-            5121 => Self::McdErrNoMemSpaces,
-            5122 => Self::McdErrNoMemBlocks,
-            5136 => Self::McdErrMemSpaceId,
-            5184 => Self::McdErrNoRegGroups,
-            5185 => Self::McdErrRegGroupId,
-            5186 => Self::McdErrRegNotCompound,
-            5376 => Self::McdErrOverlays,
-            6400 => Self::McdErrDeviceAccess,
-            6401 => Self::McdErrDeviceLocked,
-            8448 => Self::McdErrTxlistRead,
-            8449 => Self::McdErrTxlistWrite,
-            8450 => Self::McdErrTxlistTx,
-            12544 => Self::McdErrChlTypeNotSupported,
-            12545 => Self::McdErrChlTargetNotSupported,
-            12546 => Self::McdErrChlSetup,
-            12608 => Self::McdErrChlMessageFailed,
-            12800 => Self::McdErrTrigCreate,
-            12801 => Self::McdErrTrigAccess,
-            code => Self::Unknown(code),
-        }
     }
 }

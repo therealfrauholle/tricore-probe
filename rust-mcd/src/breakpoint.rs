@@ -2,8 +2,8 @@
 //!
 //! TODO The implementation is very rudimentary and possibly wrong
 use crate::mcd_bindings::{
-    mcd_addr_st, mcd_trig_simple_core_st, MCD_TRIG_ACTION_DBG_DEBUG, MCD_TRIG_OPT_DEFAULT,
-    MCD_TRIG_TYPE_IP, MCD_TRIG_TYPE_RW,
+    enum_mcd_trig_action_et, enum_mcd_trig_opt_et, enum_mcd_trig_type_et, mcd_addr_st,
+    mcd_trig_simple_core_st,
 };
 
 pub enum TriggerType {
@@ -12,10 +12,10 @@ pub enum TriggerType {
 }
 
 impl TriggerType {
-    fn as_type(&self) -> u32 {
+    fn as_type(&self) -> enum_mcd_trig_type_et {
         match self {
-            TriggerType::RW => MCD_TRIG_TYPE_RW as u32,
-            TriggerType::IP => MCD_TRIG_TYPE_IP as u32,
+            TriggerType::RW => enum_mcd_trig_type_et::MCD_TRIG_TYPE_RW,
+            TriggerType::IP => enum_mcd_trig_type_et::MCD_TRIG_TYPE_IP,
         }
     }
 }
@@ -27,9 +27,9 @@ impl mcd_trig_simple_core_st {
         // the only supported flags (? or are we missing something here)
         Self {
             struct_size: core::mem::size_of::<mcd_trig_simple_core_st>() as u32,
-            type_: trigger_type.as_type(),
-            option: MCD_TRIG_OPT_DEFAULT as u32,
-            action: MCD_TRIG_ACTION_DBG_DEBUG as u32,
+            type_: trigger_type.as_type().0,
+            option: enum_mcd_trig_opt_et::MCD_TRIG_OPT_DEFAULT.0,
+            action: enum_mcd_trig_action_et::MCD_TRIG_ACTION_DBG_DEBUG.0,
             action_param: Default::default(),
             modified: Default::default(),
             state_mask: Default::default(),
