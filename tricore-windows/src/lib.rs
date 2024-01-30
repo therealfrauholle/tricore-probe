@@ -10,7 +10,7 @@ use rust_mcd::{
     reset::ResetClass,
     system::System,
 };
-use tricore_common::{backtrace::Stacktrace, Chip};
+use tricore_common::{backtrace::Stacktrace, Chip, DeviceInfo};
 
 mod backtrace;
 pub mod das;
@@ -24,6 +24,12 @@ pub struct Config;
 pub struct DeviceSelection {
     pub udas_port: usize,
     pub info: ServerInfo,
+}
+
+impl DeviceInfo for DeviceSelection {
+    fn hardware_description(&self) -> &str {
+        self.info.acc_hw()
+    }
 }
 
 pub struct ChipInterface {

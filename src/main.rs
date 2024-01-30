@@ -15,7 +15,7 @@ use chip_interface::ChipInterface;
 use defmt::DefmtDecoder;
 use env_logger::{Builder, Target};
 use log::LevelFilter;
-use tricore_windows::DeviceSelection;
+use tricore_common::DeviceInfo;
 
 /// Simple program to flash and interface with tricore chips
 #[derive(Parser, Debug)]
@@ -78,7 +78,7 @@ fn main() -> anyhow::Result<()> {
         })?;
         let matched_devices: Vec<_> = scanned_devices
             .iter()
-            .filter(|element| element.info.acc_hw().contains(&device))
+            .filter(|element| element.hardware_description().contains(&device))
             .collect();
 
         match matched_devices.len() {
@@ -127,13 +127,13 @@ fn existing_path(input_path: &str) -> anyhow::Result<PathBuf> {
     PathBuf::from_str(input_path).with_context(|| "Value is not a correct path")
 }
 
-fn pretty_print_devices(devices: &Vec<DeviceSelection>) {
+fn pretty_print_devices<D: DeviceInfo>(devices: &Vec<D>) {
     if devices.len() == 0 {
         println!("No devices available");
         return;
     }
     println!("Found {} devices:", devices.len());
     for (index, scanned_device) in devices.iter().enumerate() {
-        println!("Device {index}: {:?}", scanned_device.info.acc_hw())
+        println!("Device {index}: {:?}", scanned_device.hardware_description())
     }
 }

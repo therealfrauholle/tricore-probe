@@ -1,6 +1,15 @@
-use std::io::Write;
+use std::{fmt::Debug, io::Write};
 
 pub mod backtrace;
+
+/// Additional information about a device
+pub trait DeviceInfo: Debug {
+    /// Hardware description of the device
+    /// 
+    /// For the Aurix Lite Kit v2 TC375, this will contain a string along the
+    /// lines of `LK7TPJS9`.
+    fn hardware_description(&self) -> &str;
+}
 
 /// Implementors provide an interface to a chip, allowing to perform basic
 /// operations on it.
@@ -10,7 +19,7 @@ pub trait Chip: Sized {
     /// Required configuration for connecting to a chip
     type Config: clap::Args;
 
-    type Device;
+    type Device: DeviceInfo;
 
     /// Connect to a chip given the required configuration
     ///

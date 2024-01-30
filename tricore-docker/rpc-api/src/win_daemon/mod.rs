@@ -45,6 +45,12 @@ pub struct DeviceInfo {
     pub name: String,
 }
 
+impl tricore_common::DeviceInfo for DeviceInfo {
+    fn hardware_description(&self) -> &str {
+        &self.name
+    }
+}
+
 impl DeviceInfo {
     pub fn new(port: usize, name: String) -> Self {
         DeviceInfo { port, name }
