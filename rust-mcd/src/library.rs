@@ -1,7 +1,4 @@
-use anyhow::Context;
-
 use crate::{
-    error::expect_error,
     mcd_bindings::{
         mcd_api_version_st, mcd_impl_version_info_st, MCD_API_VER_AUTHOR, MCD_API_VER_MAJOR,
         MCD_API_VER_MINOR,
